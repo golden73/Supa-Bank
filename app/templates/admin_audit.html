@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Audit log | Vault24{% endblock %}
+
+{% block content %}
+  <section aria-labelledby="audit-heading">
+    <h1 id="audit-heading">Audit log</h1>
+    <p class="muted">Admin-only. Records sensitive actions. No passwords or secrets
+      are ever stored here — the <code>audit()</code> helper only receives an action
+      name and a non-sensitive target.</p>
+
+    <section aria-labelledby="alerts-heading">
+      <h2 id="alerts-heading">Anomaly alerts</h2>
+      {% if alerts %}
+        {% for alert in alerts %}
+          <div class="alert alert-{{ alert.severity }}" role="alert">
+            <strong>{{ alert.type | title }}</strong> ({{ alert.severity }}):
+            {{ alert.message }}
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="muted">No alerts in the current window
+          (failed-login threshold: {{ failed_threshold }}; large-transfer threshold: {{ large_threshold }} cents).</p>
+      {% endif %}
+    </section>
+
+    <section aria-labelledby="log-heading">
+      <h2 id="log-heading">Recent activity</h2>
+      {% if entries %}
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Time (UTC)</th>
+              <th scope="col">Action</th>
+              <th scope="col">Target</th>
+              <th scope="col">User ID</th>
+              <th scope="col">IP</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for e in entries %}
+              <tr>
+                <td>{{ e["created_at"] or "—" }}</td>
+                <td>{{ e["action"] or "—" }}</td>
+                <td>{{ e["target"] or "—" }}</td>
+                <td>{{ e["user_id"] or "—" }}</td>
+                <td>{{ e["ip"] or "—" }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <p class="muted">No audit entries yet.</p>
+      {% endif %}
+    </section>
+  </section>
+{% endblock %}
