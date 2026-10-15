@@ -1,1 +1,72 @@
-/* OWNER: Home 1 */
+/* ---------- Register page ---------- */
+.card {
+  background: #ffffff;
+  width: min(92vw, 400px);
+  margin: 2rem auto;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+  color: #1a1a1a;
+}
+
+.card h1 { margin: 0; color: #0b1f3a; font-size: 1.8rem; }
+.card .subtitle { margin: .25rem 0 1.5rem; color: #555; }
+
+.card label {
+  display: block;
+  margin: 1rem 0 .35rem;
+  font-weight: 600;
+}
+
+.card input[type="text"],
+.card input[type="email"],
+.card input[type="password"] {
+  width: 100%;
+  padding: .7rem;
+  border: 1px solid #8a8a8a;
+  border-radius: 8px;
+  font-size: 1rem;
+  box-sizing: border-box;
+}
+
+.card input:focus { border-color: #0b5fff; }
+
+.card .hint {
+  margin: .4rem 0 0;
+  font-size: .85rem;
+  color: #555;
+}
+
+.card .error {
+  min-height: 1.4em;
+  margin: .75rem 0 0;
+  color: #b00020;
+  font-size: .9rem;
+}
+
+.card button[type="submit"] {
+  width: 100%;
+  margin-top: 1rem;
+  padding: .8rem;
+  border: 0;
+  border-radius: 8px;
+  background: #0b5fff;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.card button[type="submit"]:hover { background: #0948c4; }
+
+.card .footer {
+  text-align: center;
+  margin-top: 1.25rem;
+  font-size: .9rem;
+}
+.card .footer a { color: #0b5fff; }
+
+.card :focus-visible { outline: 3px solid #ffb703; outline-offset: 2px; }
+
+@media (max-width: 400px) {
+  .card { padding: 1.25rem; }
+}
