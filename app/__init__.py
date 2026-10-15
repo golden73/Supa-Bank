@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, redirect, session, url_for
 from flask_wtf.csrf import CSRFProtect
 from .config import Config
 from . import db
@@ -38,6 +38,17 @@ def create_app(test_config=None):
     def safe_error(e):  # generic message, no stack traces or internals
         code = getattr(e, "code", 500)
         return f"Error {code}", code
+
+    @app.route("/")
+    def index():
+        # Send the base URL somewhere useful instead of returning 404.
+        if session.get("user_id"):
+            return redirect(url_for("dashboard.dashboard"))
+        return redirect(url_for("login.login"))
+
+    @app.route("/health")
+    def health():
+        return {"status": "ok"}
 
     with app.app_context():
         db.init_db()

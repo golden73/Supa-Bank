@@ -9,6 +9,18 @@ def test_dashboard_requires_login(client):
     assert client.get("/dashboard").status_code == 302
 
 
+def test_root_redirects_to_login_when_anonymous(client):
+    r = client.get("/")
+    assert r.status_code == 302
+    assert "/login" in r.headers["Location"]
+
+
+def test_health_ok(client):
+    r = client.get("/health")
+    assert r.status_code == 200
+    assert r.get_json()["status"] == "ok"
+
+
 def test_admin_blocked_for_customer(client):
     with client.session_transaction() as s:
         s["user_id"] = 1
