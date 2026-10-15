@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Vault24{% endblock %}</title>
+  <title>{% block title %}SUPA BANK{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   {% set user = g.get('user') %}
   <header class="topbar">
     <a class="brand" href="{{ url_for('dashboard.dashboard') if user else url_for('login.login') }}">
-      <span class="brand-mark">V</span> Vault24
+      <span class="brand-mark">SB</span> SUPA BANK
     </a>
     <nav class="nav">
       {% if user %}
@@ -47,7 +47,7 @@
     {% block content %}{% endblock %}
   </main>
 
-  <footer class="foot">© 2026 Vault24 · Fictional bank · No real money</footer>
+  <footer class="foot">© 2026 SUPA BANK · Fictional bank · No real money</footer>
   {% block scripts %}{% endblock %}
 </body>
 </html>
