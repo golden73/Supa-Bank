@@ -5,9 +5,9 @@ from app.db import get_db
 
 ph = PasswordHasher()
 USERS = [  # (username, email, full name, password, role, balance in cents)
-    ("alice", "alice@vault24.test", "Alice Demo", "Alice#Demo2026", "customer", 100000),
-    ("bob", "bob@vault24.test", "Bob Demo", "Bob#Demo2026", "customer", 50000),
-    ("admin", "admin@vault24.test", "Admin Demo", "Admin#Demo2026", "admin", 0),
+    ("alice", "alice@supabank.test", "Alice Demo", "Alice#Demo2026", "customer", 100000),
+    ("bob", "bob@supabank.test", "Bob Demo", "Bob#Demo2026", "customer", 50000),
+    ("admin", "admin@supabank.test", "Admin Demo", "Admin#Demo2026", "admin", 0),
 ]
 app = create_app()
 with app.app_context():
