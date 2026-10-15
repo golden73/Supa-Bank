@@ -1,9 +1,11 @@
-from flask import Flask, render_template
+from flask import Flask
 from flask_wtf.csrf import CSRFProtect
 from .config import Config
 from . import db
+from .money import money
 
 csrf = CSRFProtect()
+
 
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
@@ -13,6 +15,10 @@ def create_app(test_config=None):
     csrf.init_app(app)
     app.teardown_appcontext(db.close_db)
 
+    # `money` is available in every template (e.g. history/alerts render it)
+    # so pages can't 500 just because a view forgot to pass it in.
+    app.jinja_env.globals["money"] = money
+
     from .routes import register, login, dashboard, profile, transfers, admin, audit
     for bp in (register.bp, login.bp, dashboard.bp, profile.bp, transfers.bp, admin.bp, audit.bp):
         app.register_blueprint(bp)
@@ -21,7 +27,8 @@ def create_app(test_config=None):
     def headers(resp):
         resp.headers["X-Content-Type-Options"] = "nosniff"
         resp.headers["X-Frame-Options"] = "DENY"
-        resp.headers["Content-Security-Policy"] = "default-src 'self'"
+        resp.headers["Content-Security-Policy"] = "default-src 'self'; form-action 'self'; base-uri 'self'"
+        resp.headers["Referrer-Policy"] = "same-origin"
         resp.headers["Cache-Control"] = "no-store"
         return resp
 

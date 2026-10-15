@@ -1,22 +1,30 @@
 {% extends "base.html" %}
+{% block title %}Profile — Vault24{% endblock %}
 {% block content %}
-<main class="card">
-  <h1>Edit Profile</h1>
-  <p class="subtitle">Update your name</p>
+<section class="card">
+  <h1>Profile &amp; security</h1>
+  <p class="subtitle">Update your details. Your account number cannot be changed.</p>
 
   <form method="post" novalidate>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
+    <label for="username">Username</label>
+    <input type="text" id="username" value="{{ user['username'] }}" disabled>
+
+    <label for="account">Account</label>
+    <input type="text" id="account" value="{{ account['account_number'] if account else '—' }}" disabled>
+
     <label for="full_name">Full name</label>
     <input type="text" id="full_name" name="full_name" autocomplete="name" value="{{ user['full_name'] }}" required>
 
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" autocomplete="email" value="{{ user['email'] }}" required>
+
     {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
 
-    <button type="submit">Save</button>
+    <button type="submit">Save changes</button>
   </form>
 
-  <p class="footer">
-    <a href="{{ url_for('dashboard.dashboard') }}">Back to dashboard</a>
-  </p>
-</main>
+  <p class="footer"><a href="{{ url_for('dashboard.dashboard') }}">Back to dashboard</a></p>
+</section>
 {% endblock %}

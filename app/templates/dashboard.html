@@ -1,16 +1,47 @@
 {% extends "base.html" %}
+{% block title %}Dashboard — Vault24{% endblock %}
 {% block content %}
-<main class="card">
-  <h1>Dashboard</h1>
-  <p class="subtitle">Welcome, {{ g.user['full_name'] }}</p>
+<section class="card">
+  <h1>Welcome, {{ user['full_name'] }}</h1>
+  <p class="subtitle">Your Vault24 account overview</p>
 
-  <p><strong>Account:</strong> {{ account['account_number'] }}</p>
-  <p><strong>Balance:</strong> {{ money(account['balance_cents']) }}</p>
+  {% if account %}
+    <p class="muted">Account {{ account['account_number'] }}</p>
+    <div class="balance">{{ money(account['balance_cents']) }}</div>
+  {% else %}
+    <p class="error">No account is linked to your profile.</p>
+  {% endif %}
+
+  <div class="tiles">
+    <div class="tile"><div class="tile-l">Account</div><div class="tile-v">{{ account['account_number'] if account else '—' }}</div></div>
+    <div class="tile"><div class="tile-l">Status</div><div class="tile-v in">Active</div></div>
+    <div class="tile"><div class="tile-l">Role</div><div class="tile-v">{{ user['role'] }}</div></div>
+  </div>
 
   <p class="footer">
-    <a href="{{ url_for('transfers.transfer') }}">Transfer</a> |
-    <a href="{{ url_for('profile.history') }}">History</a> |
-    <a href="{{ url_for('login.logout') }}">Log out</a>
+    <a class="btn" href="{{ url_for('transfers.transfer') }}">Send money</a>
+    <a class="btn btn-ghost" style="color:var(--accent);border-color:var(--line)" href="{{ url_for('profile.history') }}">History</a>
   </p>
-</main>
+</section>
+
+<section class="card">
+  <h2>Recent transactions</h2>
+  {% if transactions %}
+    <table>
+      <thead><tr><th>Reference</th><th>Amount</th><th>Direction</th><th>Date</th></tr></thead>
+      <tbody>
+        {% for t in transactions %}
+        <tr>
+          <td class="ref">{{ t['reference'] }}</td>
+          <td>{{ money(t['amount_cents']) }}</td>
+          <td><span class="{{ 'out' if t['outgoing'] else 'in' }}">{{ 'Out' if t['outgoing'] else 'In' }}</span></td>
+          <td>{{ t['created_at'] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">No transactions yet.</p>
+  {% endif %}
+</section>
 {% endblock %}

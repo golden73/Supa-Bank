@@ -1,72 +1,189 @@
-/* ---------- Register page ---------- */
-.card {
-  background: #ffffff;
-  width: min(92vw, 400px);
-  margin: 2rem auto;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
-  color: #1a1a1a;
+/* Vault24 — shared theme (Home 1 owns base.html + this file) */
+:root {
+  --bg: #f4f7fb;
+  --panel: #ffffff;
+  --panel-2: #eef3fa;
+  --ink: #0b1f3a;
+  --muted: #5a6e85;
+  --accent: #0b5fff;
+  --accent-dark: #0948c4;
+  --line: #dbe3ee;
+  --ok: #0f7b3e;
+  --ok-bg: #e7f6ec;
+  --bad: #b00020;
+  --bad-bg: #fdecef;
+  --radius: 12px;
 }
 
-.card h1 { margin: 0; color: #0b1f3a; font-size: 1.8rem; }
-.card .subtitle { margin: .25rem 0 1.5rem; color: #555; }
+* { box-sizing: border-box; }
 
-.card label {
-  display: block;
-  margin: 1rem 0 .35rem;
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- top bar ---------- */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  padding: 0.85rem 1.5rem;
+  background: var(--ink);
+  color: #fff;
+}
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+.brand-mark {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #1e63ff, #0b3ea8);
+  font-weight: 900;
+}
+.nav { display: flex; gap: 0.25rem; flex-wrap: wrap; }
+.nav a {
+  color: #cfe0ff;
+  text-decoration: none;
+  padding: 0.45rem 0.8rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
   font-weight: 600;
 }
+.nav a:hover { background: rgba(255, 255, 255, 0.12); color: #fff; }
+.who { margin-left: auto; display: flex; align-items: center; gap: 0.75rem; }
+.pill {
+  font-size: 0.78rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.14);
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  color: #fff;
+}
 
-.card input[type="text"],
-.card input[type="email"],
-.card input[type="password"] {
+/* ---------- layout ---------- */
+.page {
+  flex: 1;
+  width: min(100%, 960px);
+  margin: 0 auto;
+  padding: 1.75rem 1.25rem 3rem;
+}
+.foot {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.78rem;
+  padding: 1.25rem;
+}
+
+/* ---------- cards ---------- */
+.card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: 0 10px 30px rgba(9, 31, 58, 0.06);
+  margin-bottom: 1.25rem;
+}
+.card h1 { margin: 0; font-size: 1.5rem; }
+.card .subtitle { margin: 0.25rem 0 1.25rem; color: var(--muted); }
+.card.narrow { max-width: 420px; margin-left: auto; margin-right: auto; }
+
+.balance { font-size: 2.6rem; font-weight: 900; letter-spacing: -1px; margin: 0.25rem 0 1rem; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; }
+.tile {
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+}
+.tile .tile-l { font-size: 0.7rem; letter-spacing: 1px; font-weight: 800; color: var(--muted); text-transform: uppercase; }
+.tile .tile-v { font-size: 1.15rem; font-weight: 800; margin-top: 0.25rem; }
+
+/* ---------- forms ---------- */
+label { display: block; margin: 1rem 0 0.35rem; font-weight: 600; font-size: 0.9rem; }
+input[type="text"], input[type="email"], input[type="password"],
+input[type="number"], select, textarea {
   width: 100%;
-  padding: .7rem;
-  border: 1px solid #8a8a8a;
+  padding: 0.7rem;
+  border: 1px solid #8a97a8;
   border-radius: 8px;
   font-size: 1rem;
-  box-sizing: border-box;
+  font-family: inherit;
+  background: #fff;
+  color: var(--ink);
 }
-
-.card input:focus { border-color: #0b5fff; }
-
-.card .hint {
-  margin: .4rem 0 0;
-  font-size: .85rem;
-  color: #555;
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid var(--accent);
+  border-color: transparent;
 }
+.hint { margin: 0.4rem 0 0; font-size: 0.85rem; color: var(--muted); }
 
-.card .error {
-  min-height: 1.4em;
-  margin: .75rem 0 0;
-  color: #b00020;
-  font-size: .9rem;
-}
-
-.card button[type="submit"] {
-  width: 100%;
+button, .btn {
+  display: inline-block;
   margin-top: 1rem;
-  padding: .8rem;
+  padding: 0.7rem 1.1rem;
   border: 0;
   border-radius: 8px;
-  background: #0b5fff;
-  color: #ffffff;
-  font-size: 1rem;
-  font-weight: 600;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 700;
   cursor: pointer;
+  text-decoration: none;
+  font-family: inherit;
 }
-.card button[type="submit"]:hover { background: #0948c4; }
-
-.card .footer {
-  text-align: center;
-  margin-top: 1.25rem;
-  font-size: .9rem;
+button:hover, .btn:hover { background: var(--accent-dark); }
+.btn-ghost {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  color: #fff;
+  margin: 0;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.85rem;
 }
-.card .footer a { color: #0b5fff; }
+.btn-ghost:hover { background: rgba(255, 255, 255, 0.14); }
+.btn-block { width: 100%; }
 
-.card :focus-visible { outline: 3px solid #ffb703; outline-offset: 2px; }
-
-@media (max-width: 400px) {
-  .card { padding: 1.25rem; }
+.error { color: var(--bad); font-size: 0.9rem; margin-top: 0.75rem; }
+.flash {
+  background: var(--ok-bg);
+  border: 1px solid #b7e2c6;
+  color: var(--ok);
+  padding: 0.7rem 1rem;
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  font-weight: 600;
 }
+
+/* ---------- tables ---------- */
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+th {
+  text-align: left;
+  font-size: 0.72rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 0.6rem 0.5rem 0;
+}
+td { padding: 0.6rem 0.6rem 0.6rem 0; border-top: 1px solid var(--line); }
+.in { color: var(--ok); font-weight: 700; }
+.out { color: var(--bad); font-weight: 700; }
+.ref { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.82rem; }
+
+.footer { margin-top: 1.25rem; }
+.footer a { color: var(--accent); text-decoration: none; font-weight: 600; }
+.muted { color: var(--muted); }

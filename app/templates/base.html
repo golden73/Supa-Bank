@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -7,6 +7,47 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-  <main>{% block content %}{% endblock %}</main>
+  {% set user = g.get('user') %}
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('dashboard.dashboard') if user else url_for('login.login') }}">
+      <span class="brand-mark">V</span> Vault24
+    </a>
+    <nav class="nav">
+      {% if user %}
+        <a href="{{ url_for('dashboard.dashboard') }}">Dashboard</a>
+        <a href="{{ url_for('transfers.transfer') }}">Transfer</a>
+        <a href="{{ url_for('profile.history') }}">History</a>
+        <a href="{{ url_for('profile.profile') }}">Profile</a>
+        {% if user['role'] == 'admin' %}
+          <a href="{{ url_for('admin.admin_users') }}">Users</a>
+          <a href="{{ url_for('audit.audit_view') }}">Audit</a>
+          <a href="{{ url_for('audit.alerts') }}">Alerts</a>
+        {% endif %}
+      {% else %}
+        <a href="{{ url_for('login.login') }}">Log in</a>
+        <a href="{{ url_for('register.register') }}">Register</a>
+      {% endif %}
+    </nav>
+    <div class="who">
+      {% if user %}
+        <span class="pill">{{ user['username'] }} · {{ user['role'] }}</span>
+        <a class="btn btn-ghost" href="{{ url_for('login.logout') }}">Log out</a>
+      {% else %}
+        <a class="btn" href="{{ url_for('login.login') }}">Log in</a>
+      {% endif %}
+    </div>
+  </header>
+
+  <main class="page">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for m in messages %}<div class="flash" role="status">{{ m }}</div>{% endfor %}
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="foot">© 2026 Vault24 · Fictional bank · No real money</footer>
+  {% block scripts %}{% endblock %}
 </body>
 </html>

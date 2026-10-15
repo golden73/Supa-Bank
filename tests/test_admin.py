@@ -87,3 +87,52 @@ def test_toggle_unknown_user_redirects(client):
     login_as(client, 1)
     r = client.post("/admin/users/9999/toggle")
     assert r.status_code == 302
+
+
+# --- CSRF is enabled here (production-like): the admin forms must carry a token ---
+
+@pytest.fixture
+def csrf_app(tmp_path):
+    app = create_app({
+        "TESTING": True,
+        "DATABASE": str(tmp_path / "csrf.db"),
+        "WTF_CSRF_ENABLED": True,
+    })
+    ph = PasswordHasher()
+    with app.app_context():
+        db = get_db()
+        db.execute("INSERT INTO users (username,email,full_name,password_hash,role) VALUES ('admin','a@t','Admin',?,'admin')", (ph.hash("pw"),))
+        db.execute("INSERT INTO users (username,email,full_name,password_hash,role) VALUES ('bob','b@t','Bob',?,'customer')", (ph.hash("pw"),))
+        db.execute("INSERT INTO accounts (user_id,account_number,balance_cents) VALUES (1,'V24-1',0)")
+        db.execute("INSERT INTO accounts (user_id,account_number,balance_cents) VALUES (2,'V24-2',0)")
+        db.commit()
+    return app
+
+
+def _csrf_token(html: bytes) -> str:
+    import re
+    m = re.search(rb'name="csrf_token" value="([^"]+)"', html)
+    assert m, "csrf_token missing from admin form"
+    return m.group(1).decode()
+
+
+def test_admin_form_includes_csrf_token(csrf_app):
+    client = csrf_app.test_client()
+    login_as(client, 1)
+    html = client.get("/admin/users").data
+    assert b'name="csrf_token"' in html
+
+
+def test_admin_toggle_works_with_csrf_token(csrf_app):
+    client = csrf_app.test_client()
+    login_as(client, 1)
+    token = _csrf_token(client.get("/admin/users").data)
+    r = client.post("/admin/users/2/toggle", data={"csrf_token": token})
+    assert r.status_code == 302
+
+
+def test_admin_toggle_blocked_without_csrf_token(csrf_app):
+    client = csrf_app.test_client()
+    login_as(client, 1)
+    r = client.post("/admin/users/2/toggle")
+    assert r.status_code == 400

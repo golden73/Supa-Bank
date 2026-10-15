@@ -1,13 +1,45 @@
 """OWNER: Lead (backend). Transfers must be atomic, validated, idempotent."""
+import re
 import secrets
 import sqlite3
-from flask import Blueprint, g, request, redirect, url_for, render_template
+from decimal import Decimal, InvalidOperation
+
+from flask import (
+    Blueprint, current_app, flash, g, redirect, render_template, request,
+    session, url_for,
+)
 
 from ..security import login_required, audit
 from ..db import get_db
 from ..money import money
 
 bp = Blueprint("transfers", __name__)
+
+_IDEM_RE = re.compile(r"^[0-9a-f]{32}$")
+
+
+def parse_amount(text):
+    """Parse a dollar amount ("12.50") into integer cents, or None if invalid.
+
+    Bounded to two decimals, positive, and <= MAX_TRANSFER_CENTS.
+    """
+    try:
+        d = Decimal((text or "").strip())
+    except (InvalidOperation, AttributeError):
+        return None
+    if not d.is_finite() or d <= 0 or d.as_tuple().exponent < -2:
+        return None
+    cents = int(d * 100)
+    if cents <= 0 or cents > current_app.config["MAX_TRANSFER_CENTS"]:
+        return None
+    return cents
+
+
+def _idempotency_key():
+    """Per-session token, hidden in the form, so a double submit can't double-spend."""
+    if "idempotency_key" not in session:
+        session["idempotency_key"] = secrets.token_hex(16)
+    return session["idempotency_key"]
 
 
 @bp.route("/transfer", methods=["GET", "POST"])
@@ -16,68 +48,98 @@ def transfer():
     db = get_db()
     acct = db.execute(
         "SELECT id, account_number, balance_cents FROM accounts WHERE user_id = ?",
-        (g.user["id"],)
+        (g.user["id"],),
     ).fetchone()
+
+    def recipients():
+        return db.execute(
+            "SELECT account_number FROM accounts WHERE user_id != ? ORDER BY account_number",
+            (g.user["id"],),
+        ).fetchall()
+
+    def fail(message, code=400, key=None):
+        return render_template(
+            "transfer.html",
+            account=acct,
+            recipients=recipients(),
+            idempotency_key=key or _idempotency_key(),
+            error=message,
+            money=money,
+        ), code
+
+    if acct is None:
+        return fail("No account is linked to your profile.", 400)
 
     if request.method == "GET":
-        recipients = db.execute(
-            "SELECT account_number FROM accounts WHERE user_id != ?", (g.user["id"],)
-        ).fetchall()
-        return render_template("transfer.html", account=acct, recipients=recipients, money=money)
+        return render_template(
+            "transfer.html",
+            account=acct,
+            recipients=recipients(),
+            idempotency_key=_idempotency_key(),
+            money=money,
+        )
 
-    idempotency_key = request.form.get("idempotency_key", "").strip()
+    key = request.form.get("idempotency_key", "").strip()
     to_account_number = request.form.get("to_account", "").strip()
-    try:
-        amount_cents = int(request.form.get("amount_cents", "0"))
-    except ValueError:
-        amount_cents = 0
+    note = request.form.get("note", "").strip()[:100]
+    cents = parse_amount(request.form.get("amount", ""))
 
-    if not idempotency_key or not to_account_number or amount_cents <= 0:
-        return render_template("transfer.html", account=acct, error="Invalid transfer details.", money=money), 400
+    if not _IDEM_RE.match(key):
+        return fail("Your session expired. Reload the page and try again.")
+    if cents is None:
+        return fail("Enter a valid amount (positive, up to $1,000,000, max 2 decimals).")
+    if not to_account_number:
+        return fail("Choose a recipient account.")
 
-    # Recipient lookup happens inside the transaction below so a replay that
-    # races another submit cannot leave a half-applied transfer.
     to_acct = db.execute(
-        "SELECT id, user_id FROM accounts WHERE account_number = ?", (to_account_number,)
+        "SELECT id, user_id FROM accounts WHERE account_number = ?",
+        (to_account_number,),
     ).fetchone()
     if not to_acct or to_acct["user_id"] == g.user["id"]:
-        return render_template("transfer.html", account=acct, error="Recipient not found.", money=money), 400
+        return fail("Recipient account not found.")
 
     reference = secrets.token_hex(8)
     try:
-        db.execute("BEGIN")
-        # Re-check balance inside the transaction so concurrent transfers cannot
-        # overdraw the account (the UPDATE itself also guards via balance_cents >= ?).
-        if acct["balance_cents"] < amount_cents:
-            db.rollback()
-            return render_template("transfer.html", account=acct, error="Insufficient funds.", money=money), 400
+        db.execute("BEGIN IMMEDIATE")  # take the write lock before reading balances
+        dup = db.execute(
+            "SELECT reference FROM transactions WHERE idempotency_key = ?", (key,)
+        ).fetchone()
+        if dup:  # replay: nothing changes, report the original reference
+            db.execute("ROLLBACK")
+            session["idempotency_key"] = secrets.token_hex(16)
+            flash(f"Transfer already processed (reference {dup['reference']}).")
+            return redirect(url_for("dashboard.dashboard"))
 
-        db.execute(
-            "UPDATE accounts SET balance_cents = balance_cents - ? WHERE id = ? AND balance_cents >= ?",
-            (amount_cents, acct["id"], amount_cents)
+        cur = db.execute(
+            "UPDATE accounts SET balance_cents = balance_cents - ? "
+            "WHERE id = ? AND balance_cents >= ?",
+            (cents, acct["id"], cents),
         )
-        if db.total_changes == 0:
-            db.rollback()
-            return render_template("transfer.html", account=acct, error="Insufficient funds.", money=money), 400
+        if cur.rowcount == 0:  # the guarded UPDATE matched nothing -> not enough funds
+            db.execute("ROLLBACK")
+            return fail("Insufficient funds.", key=key)
 
         db.execute(
             "UPDATE accounts SET balance_cents = balance_cents + ? WHERE id = ?",
-            (amount_cents, to_acct["id"])
+            (cents, to_acct["id"]),
         )
-        try:
-            db.execute(
-                "INSERT INTO transactions (reference, idempotency_key, from_account, to_account, amount_cents) "
-                "VALUES (?, ?, ?, ?, ?)",
-                (reference, idempotency_key, acct["id"], to_acct["id"], amount_cents),
-            )
-        except sqlite3.IntegrityError:
-            # Duplicate idempotency_key = a replay. Treat as success (idempotent).
-            db.rollback()
-            return redirect(url_for("dashboard.dashboard"))
-        db.commit()
+        db.execute(
+            "INSERT INTO transactions "
+            "(reference, idempotency_key, from_account, to_account, amount_cents, note) "
+            "VALUES (?, ?, ?, ?, ?, ?)",
+            (reference, key, acct["id"], to_acct["id"], cents, note or None),
+        )
+        db.execute("COMMIT")
+    except sqlite3.IntegrityError:  # unique idempotency_key -> a concurrent replay
+        db.execute("ROLLBACK")
+        session["idempotency_key"] = secrets.token_hex(16)
+        flash("Transfer already processed.")
+        return redirect(url_for("dashboard.dashboard"))
     except Exception:
-        db.rollback()
+        db.execute("ROLLBACK")
         raise
 
+    session["idempotency_key"] = secrets.token_hex(16)
     audit("transfer", reference)
+    flash(f"Sent {money(cents)} — reference {reference}.")
     return redirect(url_for("dashboard.dashboard"))

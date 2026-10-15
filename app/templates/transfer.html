@@ -1,29 +1,35 @@
 {% extends "base.html" %}
+{% block title %}Transfer — Vault24{% endblock %}
 {% block content %}
-<main class="card">
-  <h1>Transfer</h1>
-  <p class="subtitle">From {{ account['account_number'] }} — {{ money(account['balance_cents']) }}</p>
+<section class="card">
+  <h1>Transfer funds</h1>
+  <p class="subtitle">
+    From {{ account['account_number'] }} · Available {{ money(account['balance_cents']) }}
+  </p>
 
   <form method="post" novalidate>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="idempotency_key" value="{{ idempotency_key }}">
 
     <label for="to_account">Recipient account</label>
-    <input type="text" id="to_account" name="to_account" list="recipients" required>
-    <datalist id="recipients">
-      {% for r in recipients %}<option value="{{ r['account_number'] }}">{% endfor %}
-    </datalist>
+    <select id="to_account" name="to_account" required>
+      <option value="" disabled selected>Choose an account…</option>
+      {% for r in recipients %}
+      <option value="{{ r['account_number'] }}">{{ r['account_number'] }}</option>
+      {% endfor %}
+    </select>
 
-    <label for="amount_cents">Amount (cents)</label>
-    <input type="number" id="amount_cents" name="amount_cents" min="1" required>
+    <label for="amount">Amount (USD)</label>
+    <input type="number" id="amount" name="amount" step="0.01" min="0.01" placeholder="0.00" required>
 
-    <label for="idempotency_key">Idempotency key</label>
-    <input type="text" id="idempotency_key" name="idempotency_key" required>
+    <label for="note">Note (optional)</label>
+    <input type="text" id="note" name="note" maxlength="100" placeholder="What is this for?">
 
     {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
 
-    <button type="submit">Send</button>
+    <button type="submit">Send money</button>
   </form>
 
   <p class="footer"><a href="{{ url_for('dashboard.dashboard') }}">Back to dashboard</a></p>
-</main>
+</section>
 {% endblock %}

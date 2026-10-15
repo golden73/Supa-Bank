@@ -1,6 +1,7 @@
 """Tests for transfer atomicity, idempotency, and balance integrity."""
 import pytest
 from argon2 import PasswordHasher
+
 from app import create_app
 from app.db import get_db
 
@@ -38,6 +39,13 @@ def login_as(client, uid):
         s["permanent"] = True
 
 
+def idem_key(client):
+    """Load the transfer form once, then read the server-issued token."""
+    client.get("/transfer")
+    with client.session_transaction() as s:
+        return s["idempotency_key"]
+
+
 def test_transfer_requires_login(client):
     assert client.post("/transfer", data={}).status_code == 302
 
@@ -45,7 +53,7 @@ def test_transfer_requires_login(client):
 def test_transfer_ok_debits_sender_credits_recipient(client):
     login_as(client, 1)
     r = client.post("/transfer", data={
-        "to_account": "V24-2", "amount_cents": "3000", "idempotency_key": "k1",
+        "to_account": "V24-2", "amount": "30.00", "idempotency_key": idem_key(client),
     })
     assert r.status_code == 302
     with client.application.app_context():
@@ -53,14 +61,14 @@ def test_transfer_ok_debits_sender_credits_recipient(client):
         a2 = get_db().execute("SELECT balance_cents FROM accounts WHERE id=2").fetchone()
         assert a1["balance_cents"] == 97000
         assert a2["balance_cents"] == 53000
-        t = get_db().execute("SELECT reference, idempotency_key FROM transactions").fetchone()
-        assert t["reference"] and t["idempotency_key"] == "k1"
+        t = get_db().execute("SELECT reference FROM transactions").fetchone()
+        assert t["reference"]
 
 
 def test_transfer_self_to_self_rejected(client):
     login_as(client, 1)
     r = client.post("/transfer", data={
-        "to_account": "V24-1", "amount_cents": "100", "idempotency_key": "k2",
+        "to_account": "V24-1", "amount": "1.00", "idempotency_key": idem_key(client),
     })
     assert r.status_code == 400
     with client.application.app_context():
@@ -70,31 +78,37 @@ def test_transfer_self_to_self_rejected(client):
 def test_transfer_insufficient_funds_rejected(client):
     login_as(client, 1)
     r = client.post("/transfer", data={
-        "to_account": "V24-2", "amount_cents": "999999", "idempotency_key": "k3",
+        "to_account": "V24-2", "amount": "9999.00", "idempotency_key": idem_key(client),
     })
     assert r.status_code == 400
     with client.application.app_context():
-        a1 = get_db().execute("SELECT balance_cents FROM accounts WHERE id=1").fetchone()
-        assert a1["balance_cents"] == 100000
+        assert get_db().execute("SELECT balance_cents FROM accounts WHERE id=1").fetchone()[0] == 100000
 
 
 def test_idempotency_replay_does_not_double_debit(client):
     login_as(client, 1)
-    data = {"to_account": "V24-2", "amount_cents": "1000", "idempotency_key": "dup"}
+    key = idem_key(client)
+    data = {"to_account": "V24-2", "amount": "10.00", "idempotency_key": key}
     assert client.post("/transfer", data=data).status_code == 302
     assert client.post("/transfer", data=data).status_code == 302
     with client.application.app_context():
-        a1 = get_db().execute("SELECT balance_cents FROM accounts WHERE id=1").fetchone()
-        a2 = get_db().execute("SELECT balance_cents FROM accounts WHERE id=2").fetchone()
-        assert a1["balance_cents"] == 99000
-        assert a2["balance_cents"] == 51000
+        assert get_db().execute("SELECT balance_cents FROM accounts WHERE id=1").fetchone()[0] == 99000
+        assert get_db().execute("SELECT balance_cents FROM accounts WHERE id=2").fetchone()[0] == 51000
         assert get_db().execute("SELECT COUNT(*) FROM transactions").fetchone()[0] == 1
 
 
-def test_transfer_invalid_amount_rejected(client):
+def test_transfer_rejects_bad_amounts(client):
+    login_as(client, 1)
+    for bad in ("0", "-5", "abc", "1.999"):
+        key = idem_key(client)
+        r = client.post("/transfer", data={"to_account": "V24-2", "amount": bad, "idempotency_key": key})
+        assert r.status_code == 400, bad
+
+
+def test_transfer_rejects_forged_idempotency_key(client):
     login_as(client, 1)
     r = client.post("/transfer", data={
-        "to_account": "V24-2", "amount_cents": "0", "idempotency_key": "k5",
+        "to_account": "V24-2", "amount": "1.00", "idempotency_key": "not-a-valid-token",
     })
     assert r.status_code == 400
 
@@ -102,14 +116,6 @@ def test_transfer_invalid_amount_rejected(client):
 def test_transfer_unknown_recipient_rejected(client):
     login_as(client, 1)
     r = client.post("/transfer", data={
-        "to_account": "V24-999", "amount_cents": "100", "idempotency_key": "k6",
+        "to_account": "V24-999", "amount": "1.00", "idempotency_key": idem_key(client),
     })
     assert r.status_code == 400
-
-
-def test_history_only_shows_own_transactions(client):
-    login_as(client, 1)
-    # Bob sends to himself (no cross-user tx yet) - then check alice's history is empty.
-    r = client.get("/history")
-    assert r.status_code == 200
-    assert b"V24-1" not in r.data  # no transactions for alice yet

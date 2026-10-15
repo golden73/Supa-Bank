@@ -1,23 +1,29 @@
 {% extends "base.html" %}
+{% block title %}History — Vault24{% endblock %}
 {% block content %}
-<main class="card">
-  <h1>Transaction History</h1>
-  <p class="subtitle">Your recent activity</p>
+<section class="card">
+  <h1>Transaction history</h1>
+  <p class="subtitle">Only your own transactions are shown.</p>
 
-  <table>
-    <thead><tr><th>Reference</th><th>Amount</th><th>Direction</th><th>Date</th></tr></thead>
-    <tbody>
-      {% for t in transactions %}
-      <tr>
-        <td>{{ t['reference'] }}</td>
-        <td>{{ money(t['amount_cents']) }}</td>
-        <td>{% if t['outgoing'] %}Out{% else %}In{% endif %}</td>
-        <td>{{ t['created_at'] }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  {% if transactions %}
+    <table>
+      <thead><tr><th>Reference</th><th>Amount</th><th>Direction</th><th>Note</th><th>Date</th></tr></thead>
+      <tbody>
+        {% for t in transactions %}
+        <tr>
+          <td class="ref">{{ t['reference'] }}</td>
+          <td>{{ money(t['amount_cents']) }}</td>
+          <td><span class="{{ 'out' if t['outgoing'] else 'in' }}">{{ 'Out' if t['outgoing'] else 'In' }}</span></td>
+          <td>{{ t['note'] or '—' }}</td>
+          <td>{{ t['created_at'] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p class="muted">No transactions yet.</p>
+  {% endif %}
 
   <p class="footer"><a href="{{ url_for('dashboard.dashboard') }}">Back to dashboard</a></p>
-</main>
+</section>
 {% endblock %}

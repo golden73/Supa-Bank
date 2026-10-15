@@ -1,5 +1,7 @@
+import sqlite3
+
 import pytest
-from app import create_app
+
 from app.db import get_db
 
 
@@ -15,5 +17,5 @@ def test_admin_blocked_for_customer(client):
 
 def test_balance_cannot_go_negative(client):
     with client.application.app_context():
-        with pytest.raises(Exception):
+        with pytest.raises(sqlite3.IntegrityError):
             get_db().execute("UPDATE accounts SET balance_cents = -5 WHERE id = 1")

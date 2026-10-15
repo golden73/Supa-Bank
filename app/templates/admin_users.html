@@ -1,8 +1,9 @@
 {% extends "base.html" %}
+{% block title %}Users — Vault24{% endblock %}
 {% block content %}
-<main class="card">
-  <h1>Admin — Users</h1>
-  <p class="subtitle">Vault24</p>
+<section class="card">
+  <h1>User management</h1>
+  <p class="subtitle">Staff only. Password hashes are never displayed.</p>
 
   <table>
     <thead>
@@ -17,18 +18,20 @@
         <td>{{ u['email'] }}</td>
         <td>{{ u['full_name'] }}</td>
         <td>{{ u['role'] }}</td>
-        <td>{% if u['is_active'] %}Yes{% else %}No{% endif %}</td>
+        <td>{% if u['is_active'] %}<span class="in">Yes</span>{% else %}<span class="out">No</span>{% endif %}</td>
         <td>{{ u['failed_logins'] }}</td>
         <td>{% if u['locked_until'] %}{{ u['locked_until'] }}{% else %}—{% endif %}</td>
         <td>{{ u['account_number'] or '—' }}</td>
         <td>{% if u['balance_cents'] is not none %}{{ money(u['balance_cents']) }}{% else %}—{% endif %}</td>
         <td>
           <form method="post" action="{{ url_for('admin.toggle_user', user_id=u['id']) }}" style="display:inline">
-            <button type="submit">{% if u['is_active'] %}Lock{% else %}Unlock{% endif %}</button>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn-ghost" style="color:var(--accent);border-color:var(--line)">{% if u['is_active'] %}Lock{% else %}Unlock{% endif %}</button>
           </form>
           {% if u['locked_until'] %}
           <form method="post" action="{{ url_for('admin.unlock_user', user_id=u['id']) }}" style="display:inline">
-            <button type="submit">Clear lockout</button>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn-ghost" style="color:var(--accent);border-color:var(--line)">Clear lockout</button>
           </form>
           {% endif %}
         </td>
@@ -36,7 +39,5 @@
       {% endfor %}
     </tbody>
   </table>
-
-  <p class="footer"><a href="{{ url_for('dashboard.dashboard') }}">Back to dashboard</a></p>
-</main>
+</section>
 {% endblock %}
