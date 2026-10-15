@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="card">
+  <h1>Log in</h1>
+  <p class="subtitle">Vault24 Bank</p>
+
+  <form method="post" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <label for="username">Username</label>
+    <input type="text" id="username" name="username" autocomplete="username" required>
+
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" autocomplete="current-password" required>
+
+    {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+
+    <button type="submit">Log in</button>
+  </form>
+
+  <p class="footer">Not registered? <a href="{{ url_for('register.register') }}">Create an account</a></p>
+</main>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="card">
+  <h1>Transaction History</h1>
+  <p class="subtitle">Your recent activity</p>
+
+  <table>
+    <thead><tr><th>Reference</th><th>Amount</th><th>Direction</th><th>Date</th></tr></thead>
+    <tbody>
+      {% for t in transactions %}
+      <tr>
+        <td>{{ t['reference'] }}</td>
+        <td>{{ money(t['amount_cents']) }}</td>
+        <td>{% if t['outgoing'] %}Out{% else %}In{% endif %}</td>
+        <td>{{ t['created_at'] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p class="footer"><a href="{{ url_for('dashboard.dashboard') }}">Back to dashboard</a></p>
+</main>
+{% endblock %}

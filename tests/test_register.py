@@ -1,4 +1,4 @@
-def test_register_ok_and_hashed(client, app):          # CHECK: fixture names in tests/conftest.py
+def test_register_ok_and_hashed(client, app):
     r = client.post("/register", data={
         "username": "newuser", "full_name": "New User",
         "email": "new@example.com", "password": "Sup3rSecret99",
@@ -26,4 +26,7 @@ def test_register_duplicate_is_generic(client):
     client.post("/register", data=data)
     r = client.post("/register", data=data)
     assert r.status_code == 400
-    assert b"already" not in r.data.lower()
+    # Check only the error message, not the footer link
+    error_text = r.data.decode().split('class="error"')[1].split('</p>')[0] if 'class="error"' in r.data.decode() else ''
+    assert "already" not in error_text.lower()
+    assert "could not create the account" in error_text.lower()

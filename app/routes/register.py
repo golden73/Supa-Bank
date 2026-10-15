@@ -1,4 +1,4 @@
-
+"""OWNER: Registration. Creates user + account with argon2 hash."""
 import re
 import secrets
 import sqlite3
@@ -6,10 +6,10 @@ import sqlite3
 from argon2 import PasswordHasher
 from flask import Blueprint, render_template, request, redirect, url_for
 
-from app.db import get_db              # CHECK: where your DB helper lives
-from app.security import audit         # CHECK: audit() is said to be in security.py
+from ..security import audit
+from ..db import get_db
 
-bp = Blueprint("register", __name__)   # CHECK: copy how login.py defines its blueprint
+bp = Blueprint("register", __name__)
 ph = PasswordHasher()
 
 USERNAME_RE = re.compile(r"^[A-Za-z0-9_]{3,30}$")
@@ -71,5 +71,5 @@ def register():
         db.rollback()
         raise
 
-    audit("register")                  # CHECK: signature, it may take extra arguments
+    audit("register")
     return redirect(url_for("login.login"))

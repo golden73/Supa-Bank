@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="card">
+  <h1>Dashboard</h1>
+  <p class="subtitle">Welcome, {{ g.user['full_name'] }}</p>
+
+  <p><strong>Account:</strong> {{ account['account_number'] }}</p>
+  <p><strong>Balance:</strong> {{ money(account['balance_cents']) }}</p>
+
+  <p class="footer">
+    <a href="{{ url_for('transfers.transfer') }}">Transfer</a> |
+    <a href="{{ url_for('profile.history') }}">History</a> |
+    <a href="{{ url_for('login.logout') }}">Log out</a>
+  </p>
+</main>
+{% endblock %}
