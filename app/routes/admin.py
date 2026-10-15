@@ -7,6 +7,10 @@ from ..db import get_db
 bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 
+def money(cents):
+    return f"${cents / 100:,.2f}"
+
+
 @bp.route("/users")
 @admin_required
 def admin_users():
@@ -16,7 +20,7 @@ def admin_users():
         "FROM users u LEFT JOIN accounts a ON a.user_id = u.id "
         "ORDER BY u.id"
     ).fetchall()
-    return render_template("admin_users.html", users=rows)
+    return render_template("admin_users.html", users=rows, money=money)
 
 
 @bp.route("/users/<int:user_id>/toggle", methods=["POST"])

@@ -8,6 +8,10 @@ from ..db import get_db
 bp = Blueprint("transfers", __name__)
 
 
+def money(cents):
+    return f"${cents / 100:,.2f}"
+
+
 @bp.route("/transfer", methods=["GET", "POST"])
 @login_required
 def transfer():
@@ -21,7 +25,7 @@ def transfer():
         recipients = db.execute(
             "SELECT account_number FROM accounts WHERE user_id != ?", (g.user["id"],)
         ).fetchall()
-        return render_template("transfer.html", account=acct, recipients=recipients)
+        return render_template("transfer.html", account=acct, recipients=recipients, money=money)
 
     idempotency_key = request.form.get("idempotency_key", "").strip()
     to_account_number = request.form.get("to_account", "").strip()
@@ -31,7 +35,7 @@ def transfer():
         amount_cents = 0
 
     if not idempotency_key or not to_account_number or amount_cents <= 0:
-        return render_template("transfer.html", account=acct, error="Invalid transfer details."), 400
+        return render_template("transfer.html", account=acct, error="Invalid transfer details.", money=money), 400
 
     existing = db.execute(
         "SELECT id FROM transactions WHERE idempotency_key = ?", (idempotency_key,)
@@ -43,9 +47,9 @@ def transfer():
         "SELECT id, user_id FROM accounts WHERE account_number = ?", (to_account_number,)
     ).fetchone()
     if not to_acct or to_acct["user_id"] == g.user["id"]:
-        return render_template("transfer.html", account=acct, error="Recipient not found."), 400
+        return render_template("transfer.html", account=acct, error="Recipient not found.", money=money), 400
     if acct["balance_cents"] < amount_cents:
-        return render_template("transfer.html", account=acct, error="Insufficient funds."), 400
+        return render_template("transfer.html", account=acct, error="Insufficient funds.", money=money), 400
 
     reference = secrets.token_hex(8)
     try:
