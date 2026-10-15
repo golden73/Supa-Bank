@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="card">
+  <h1>Anomaly Alerts</h1>
+  <p class="subtitle">Automated detection</p>
+
+  <h2>Failed Logins (5+)</h2>
+  <table>
+    <thead><tr><th>ID</th><th>Username</th><th>Failed</th><th>Locked</th></tr></thead>
+    <tbody>
+      {% for u in failed %}
+      <tr>
+        <td>{{ u['id'] }}</td>
+        <td>{{ u['username'] }}</td>
+        <td>{{ u['failed_logins'] }}</td>
+        <td>{% if u['locked_until'] %}{{ u['locked_until'] }}{% else %}—{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>Large Transfers ($1,000+)</h2>
+  <table>
+    <thead><tr><th>Reference</th><th>Amount</th><th>From</th><th>Date</th></tr></thead>
+    <tbody>
+      {% for t in large %}
+      <tr>
+        <td>{{ t['reference'] }}</td>
+        <td>{{ money(t['amount_cents']) }}</td>
+        <td>{{ t['username'] }} ({{ t['account_number'] }})</td>
+        <td>{{ t['created_at'] }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <p class="footer">
+    <a href="{{ url_for('audit.audit_view') }}">Audit Log</a> |
+    <a href="{{ url_for('admin.admin_users') }}">Users</a> |
+    <a href="{{ url_for('dashboard.dashboard') }}">Dashboard</a>
+  </p>
+</main>
+{% endblock %}

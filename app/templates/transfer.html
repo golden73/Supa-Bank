@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="card">
+  <h1>Transfer</h1>
+  <p class="subtitle">From {{ account['account_number'] }} — {{ money(account['balance_cents']) }}</p>
+
+  <form method="post" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <label for="to_account">Recipient account</label>
+    <input type="text" id="to_account" name="to_account" list="recipients" required>
+    <datalist id="recipients">
+      {% for r in recipients %}<option value="{{ r['account_number'] }}">{% endfor %}
+    </datalist>
+
+    <label for="amount_cents">Amount (cents)</label>
+    <input type="number" id="amount_cents" name="amount_cents" min="1" required>
+
+    <label for="idempotency_key">Idempotency key</label>
+    <input type="text" id="idempotency_key" name="idempotency_key" required>
+
+    {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+
+    <button type="submit">Send</button>
+  </form>
+
+  <p class="footer"><a href="{{ url_for('dashboard.dashboard') }}">Back to dashboard</a></p>
+</main>
+{% endblock %}

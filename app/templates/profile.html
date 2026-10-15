@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<main class="card">
+  <h1>Edit Profile</h1>
+  <p class="subtitle">Update your name</p>
+
+  <form method="post" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <label for="full_name">Full name</label>
+    <input type="text" id="full_name" name="full_name" autocomplete="name" value="{{ user['full_name'] }}" required>
+
+    {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+
+    <button type="submit">Save</button>
+  </form>
+
+  <p class="footer">
+    <a href="{{ url_for('dashboard.dashboard') }}">Back to dashboard</a>
+  </p>
+</main>
+{% endblock %}
