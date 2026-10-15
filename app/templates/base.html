@@ -3,38 +3,45 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
   <title>{% block title %}SUPA BANK{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   {% set user = g.get('user') %}
+  {% set ep = request.endpoint %}
   <header class="topbar">
-    <a class="brand" href="{{ url_for('dashboard.dashboard') if user else url_for('login.login') }}">
-      <span class="brand-mark">SB</span> SUPA BANK
-    </a>
-    <nav class="nav">
-      {% if user %}
-        <a href="{{ url_for('dashboard.dashboard') }}">Dashboard</a>
-        <a href="{{ url_for('transfers.transfer') }}">Transfer</a>
-        <a href="{{ url_for('profile.history') }}">History</a>
-        <a href="{{ url_for('profile.profile') }}">Profile</a>
-        {% if user['role'] == 'admin' %}
-          <a href="{{ url_for('admin.admin_users') }}">Users</a>
-          <a href="{{ url_for('audit.audit_view') }}">Audit</a>
-          <a href="{{ url_for('audit.alerts') }}">Alerts</a>
+    <div class="topbar-inner">
+      <a class="brand" href="{{ url_for('dashboard.dashboard') if user else url_for('login.login') }}">
+        <span class="brand-mark">SB</span>
+        <span class="brand-name">SUPA <span>BANK</span></span>
+      </a>
+
+      <nav class="nav" aria-label="Main">
+        {% if user %}
+          <a class="{{ 'active' if ep == 'dashboard.dashboard' else '' }}" href="{{ url_for('dashboard.dashboard') }}">Dashboard</a>
+          <a class="{{ 'active' if ep == 'transfers.transfer' else '' }}" href="{{ url_for('transfers.transfer') }}">Transfer</a>
+          <a class="{{ 'active' if ep == 'profile.history' else '' }}" href="{{ url_for('profile.history') }}">History</a>
+          <a class="{{ 'active' if ep == 'profile.profile' else '' }}" href="{{ url_for('profile.profile') }}">Profile</a>
+          {% if user['role'] == 'admin' %}
+            <a class="{{ 'active' if ep == 'admin.admin_users' else '' }}" href="{{ url_for('admin.admin_users') }}">Users</a>
+            <a class="{{ 'active' if ep == 'audit.audit_view' else '' }}" href="{{ url_for('audit.audit_view') }}">Audit</a>
+            <a class="{{ 'active' if ep == 'audit.alerts' else '' }}" href="{{ url_for('audit.alerts') }}">Alerts</a>
+          {% endif %}
+        {% else %}
+          <a class="{{ 'active' if ep == 'login.login' else '' }}" href="{{ url_for('login.login') }}">Log in</a>
+          <a class="{{ 'active' if ep == 'register.register' else '' }}" href="{{ url_for('register.register') }}">Register</a>
         {% endif %}
-      {% else %}
-        <a href="{{ url_for('login.login') }}">Log in</a>
-        <a href="{{ url_for('register.register') }}">Register</a>
-      {% endif %}
-    </nav>
-    <div class="who">
-      {% if user %}
-        <span class="pill">{{ user['username'] }} · {{ user['role'] }}</span>
-        <a class="btn btn-ghost" href="{{ url_for('login.logout') }}">Log out</a>
-      {% else %}
-        <a class="btn" href="{{ url_for('login.login') }}">Log in</a>
-      {% endif %}
+      </nav>
+
+      <div class="who">
+        {% if user %}
+          <span class="pill"><span class="dot"></span>{{ user['username'] }} · {{ user['role'] }}</span>
+          <a class="btn btn-ghost" href="{{ url_for('login.logout') }}">Log out</a>
+        {% else %}
+          <a class="btn" href="{{ url_for('login.login') }}">Log in</a>
+        {% endif %}
+      </div>
     </div>
   </header>
 

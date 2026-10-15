@@ -1,24 +1,28 @@
 {% extends "base.html" %}
 {% block title %}Audit — SUPA BANK{% endblock %}
 {% block content %}
-<section class="card">
+<div class="page-head">
   <h1>Audit log</h1>
   <p class="subtitle">Recent activity (last 200 entries). No passwords or secrets are logged.</p>
+</div>
 
-  <table>
-    <thead><tr><th>User ID</th><th>Action</th><th>Target</th><th>IP</th><th>Date</th></tr></thead>
-    <tbody>
-      {% for a in audit %}
-      <tr>
-        <td>{{ a['user_id'] }}</td>
-        <td>{{ a['action'] }}</td>
-        <td>{{ a['target'] }}</td>
-        <td class="ref">{{ a['ip'] }}</td>
-        <td>{{ a['created_at'] }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+<section class="card">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>User ID</th><th>Action</th><th>Target</th><th>IP</th><th>Date</th></tr></thead>
+      <tbody>
+        {% for a in audit %}
+        <tr>
+          <td>{{ a['user_id'] }}</td>
+          <td>{{ a['action'] }}</td>
+          <td>{{ a['target'] }}</td>
+          <td class="ref">{{ a['ip'] }}</td>
+          <td class="muted">{{ a['created_at'] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 
   <p class="footer">
     <a href="{{ url_for('audit.alerts') }}">Alerts</a> ·

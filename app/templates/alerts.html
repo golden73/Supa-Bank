@@ -1,63 +1,75 @@
 {% extends "base.html" %}
 {% block title %}Alerts — SUPA BANK{% endblock %}
 {% block content %}
-<section class="card">
+<div class="page-head">
   <h1>Anomaly alerts</h1>
   <p class="subtitle">Automated detection · recent window {{ minutes }} min</p>
+</div>
 
+<section class="card">
   <h2>Failed logins ({{ threshold }}+)</h2>
   {% if failed %}
-    <table>
-      <thead><tr><th>ID</th><th>Username</th><th>Failed</th><th>Locked until</th></tr></thead>
-      <tbody>
-        {% for u in failed %}
-        <tr>
-          <td>{{ u['id'] }}</td>
-          <td>{{ u['username'] }}</td>
-          <td>{{ u['failed_logins'] }}</td>
-          <td>{% if u['locked_until'] %}{{ u['locked_until'] }}{% else %}—{% endif %}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Username</th><th>Failed</th><th>Locked until</th></tr></thead>
+        <tbody>
+          {% for u in failed %}
+          <tr>
+            <td>{{ u['id'] }}</td>
+            <td>{{ u['username'] }}</td>
+            <td>{{ u['failed_logins'] }}</td>
+            <td>{% if u['locked_until'] %}{{ u['locked_until'] }}{% else %}—{% endif %}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   {% else %}
     <p class="muted">No accounts over the threshold.</p>
   {% endif %}
+</section>
 
+<section class="card">
   <h2>Repeated failures by IP ({{ threshold }}+)</h2>
   {% if ips %}
-    <table>
-      <thead><tr><th>IP</th><th>Failed logins</th></tr></thead>
-      <tbody>
-        {% for r in ips %}<tr><td class="ref">{{ r['ip'] }}</td><td>{{ r['count'] }}</td></tr>{% endfor %}
-      </tbody>
-    </table>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>IP</th><th>Failed logins</th></tr></thead>
+        <tbody>
+          {% for r in ips %}<tr><td class="ref">{{ r['ip'] }}</td><td>{{ r['count'] }}</td></tr>{% endfor %}
+        </tbody>
+      </table>
+    </div>
   {% else %}
     <p class="muted">No suspicious IP activity.</p>
   {% endif %}
+</section>
 
+<section class="card">
   <h2>Large transfers ({{ money(large_cents) }}+)</h2>
   {% if large %}
-    <table>
-      <thead><tr><th>Reference</th><th>Amount</th><th>From</th><th>Date</th></tr></thead>
-      <tbody>
-        {% for t in large %}
-        <tr>
-          <td class="ref">{{ t['reference'] }}</td>
-          <td>{{ money(t['amount_cents']) }}</td>
-          <td>{{ t['username'] }} ({{ t['account_number'] }})</td>
-          <td>{{ t['created_at'] }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Reference</th><th>Amount</th><th>From</th><th>Date</th></tr></thead>
+        <tbody>
+          {% for t in large %}
+          <tr>
+            <td class="ref">{{ t['reference'] }}</td>
+            <td>{{ money(t['amount_cents']) }}</td>
+            <td>{{ t['username'] }} ({{ t['account_number'] }})</td>
+            <td class="muted">{{ t['created_at'] }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   {% else %}
     <p class="muted">No large transfers.</p>
   {% endif %}
-
-  <p class="footer">
-    <a href="{{ url_for('audit.audit_view') }}">Audit log</a> ·
-    <a href="{{ url_for('admin.admin_users') }}">Users</a>
-  </p>
 </section>
+
+<p class="footer">
+  <a href="{{ url_for('audit.audit_view') }}">Audit log</a> ·
+  <a href="{{ url_for('admin.admin_users') }}">Users</a>
+</p>
 {% endblock %}

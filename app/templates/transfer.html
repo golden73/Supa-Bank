@@ -1,12 +1,15 @@
 {% extends "base.html" %}
 {% block title %}Transfer — SUPA BANK{% endblock %}
 {% block content %}
-<section class="card">
+<div class="page-head">
   <h1>Transfer funds</h1>
   <p class="subtitle">
-    From {{ account['account_number'] }} · Available {{ money(account['balance_cents']) }}
+    From {{ account['account_number'] if account else '—' }} ·
+    Available {{ money(account['balance_cents']) if account else '—' }}
   </p>
+</div>
 
+<section class="card auth">
   <form method="post" novalidate>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <input type="hidden" name="idempotency_key" value="{{ idempotency_key }}">
@@ -27,7 +30,7 @@
 
     {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
 
-    <button type="submit">Send money</button>
+    <button type="submit" class="btn-block">Send money</button>
   </form>
 
   <p class="footer"><a href="{{ url_for('dashboard.dashboard') }}">Back to dashboard</a></p>

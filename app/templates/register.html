@@ -1,6 +1,7 @@
 {% extends "base.html" %}
+{% block title %}Register — SUPA BANK{% endblock %}
 {% block content %}
-<main class="card">
+<section class="card auth">
   <h1>Create your account</h1>
   <p class="subtitle">Register for SUPA BANK</p>
 
@@ -22,9 +23,9 @@
 
     {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
 
-    <button type="submit">Register</button>
+    <button type="submit" class="btn-block">Register</button>
   </form>
 
   <p class="footer">Already registered? <a href="{{ url_for('login.login') }}">Log in</a></p>
-</main>
+</section>
 {% endblock %}

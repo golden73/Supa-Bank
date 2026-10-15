@@ -1,10 +1,12 @@
 {% extends "base.html" %}
 {% block title %}Profile — SUPA BANK{% endblock %}
 {% block content %}
-<section class="card">
+<div class="page-head">
   <h1>Profile &amp; security</h1>
   <p class="subtitle">Update your details. Your account number cannot be changed.</p>
+</div>
 
+<section class="card auth">
   <form method="post" novalidate>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
@@ -22,7 +24,7 @@
 
     {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
 
-    <button type="submit">Save changes</button>
+    <button type="submit" class="btn-block">Save changes</button>
   </form>
 
   <p class="footer"><a href="{{ url_for('dashboard.dashboard') }}">Back to dashboard</a></p>
