@@ -1,4 +1,4 @@
-# Vault24 — 24-Hour Digital Banking Security Prototype
+# SUPA BANK — 24-Hour Digital Banking Security Prototype
 
 Stack: **Python Flask 3 + SQLite + Argon2id + vanilla HTML/CSS/Jinja templates**.
 All data is fictional. No real money, banking platforms or personal financial information.
@@ -97,8 +97,8 @@ Filter by `g.user["id"]`, never a user-supplied ID. Never log secrets. Feature b
 ## AI-use disclosure
 Tool / purpose / what was reviewed or changed: **Kilo (kilo-auto/free)** was used to scaffold
 and review the codebase. Purpose: read the existing skeleton, integrate the login/register and
-admin work, and review diffs for security compliance. Reviewed/changed: reverted the
-SupaBank→Vault24 rebrand; fixed a tz-naive/aware datetime crash in the lockout check; made
+admin work, and review diffs for security compliance. Reviewed/changed: fixed a tz-naive/aware
+datetime crash in the lockout check; made
 lockout thresholds read from `current_app.config`; corrected `audit()` so the actor defaults
 to the session user; consolidated the duplicated `money()` helper into `app/money.py`; renamed
 `Register.html` → `register.html`. A later pass (this repo) repaired the history/profile/alerts

@@ -22,8 +22,8 @@ def app(tmp_path):
         db.execute(
             "INSERT INTO users (username,email,full_name,password_hash,role) VALUES "
             "('bob','b@t','Bob',?,'customer')", (ph.hash("Bob#Demo2026"),))
-        db.execute("INSERT INTO accounts (user_id,account_number,balance_cents) VALUES (1,'V24-1',100000)")
-        db.execute("INSERT INTO accounts (user_id,account_number,balance_cents) VALUES (2,'V24-2',50000)")
+        db.execute("INSERT INTO accounts (user_id,account_number,balance_cents) VALUES (1,'SB-1',100000)")
+        db.execute("INSERT INTO accounts (user_id,account_number,balance_cents) VALUES (2,'SB-2',50000)")
         db.commit()
     return app
 
@@ -53,7 +53,7 @@ def test_transfer_requires_login(client):
 def test_transfer_ok_debits_sender_credits_recipient(client):
     login_as(client, 1)
     r = client.post("/transfer", data={
-        "to_account": "V24-2", "amount": "30.00", "idempotency_key": idem_key(client),
+        "to_account": "SB-2", "amount": "30.00", "idempotency_key": idem_key(client),
     })
     assert r.status_code == 302
     with client.application.app_context():
@@ -68,7 +68,7 @@ def test_transfer_ok_debits_sender_credits_recipient(client):
 def test_transfer_self_to_self_rejected(client):
     login_as(client, 1)
     r = client.post("/transfer", data={
-        "to_account": "V24-1", "amount": "1.00", "idempotency_key": idem_key(client),
+        "to_account": "SB-1", "amount": "1.00", "idempotency_key": idem_key(client),
     })
     assert r.status_code == 400
     with client.application.app_context():
@@ -78,7 +78,7 @@ def test_transfer_self_to_self_rejected(client):
 def test_transfer_insufficient_funds_rejected(client):
     login_as(client, 1)
     r = client.post("/transfer", data={
-        "to_account": "V24-2", "amount": "9999.00", "idempotency_key": idem_key(client),
+        "to_account": "SB-2", "amount": "9999.00", "idempotency_key": idem_key(client),
     })
     assert r.status_code == 400
     with client.application.app_context():
@@ -88,7 +88,7 @@ def test_transfer_insufficient_funds_rejected(client):
 def test_idempotency_replay_does_not_double_debit(client):
     login_as(client, 1)
     key = idem_key(client)
-    data = {"to_account": "V24-2", "amount": "10.00", "idempotency_key": key}
+    data = {"to_account": "SB-2", "amount": "10.00", "idempotency_key": key}
     assert client.post("/transfer", data=data).status_code == 302
     assert client.post("/transfer", data=data).status_code == 302
     with client.application.app_context():
@@ -101,14 +101,14 @@ def test_transfer_rejects_bad_amounts(client):
     login_as(client, 1)
     for bad in ("0", "-5", "abc", "1.999"):
         key = idem_key(client)
-        r = client.post("/transfer", data={"to_account": "V24-2", "amount": bad, "idempotency_key": key})
+        r = client.post("/transfer", data={"to_account": "SB-2", "amount": bad, "idempotency_key": key})
         assert r.status_code == 400, bad
 
 
 def test_transfer_rejects_forged_idempotency_key(client):
     login_as(client, 1)
     r = client.post("/transfer", data={
-        "to_account": "V24-2", "amount": "1.00", "idempotency_key": "not-a-valid-token",
+        "to_account": "SB-2", "amount": "1.00", "idempotency_key": "not-a-valid-token",
     })
     assert r.status_code == 400
 
@@ -116,6 +116,6 @@ def test_transfer_rejects_forged_idempotency_key(client):
 def test_transfer_unknown_recipient_rejected(client):
     login_as(client, 1)
     r = client.post("/transfer", data={
-        "to_account": "V24-999", "amount": "1.00", "idempotency_key": idem_key(client),
+        "to_account": "SB-999", "amount": "1.00", "idempotency_key": idem_key(client),
     })
     assert r.status_code == 400

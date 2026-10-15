@@ -17,7 +17,7 @@ def app(tmp_path):
             "VALUES ('c','c@x','C','x','customer')"
         )
         db.execute(
-            "INSERT INTO accounts (user_id,account_number,balance_cents) VALUES (1,'V24-1',1000)"
+            "INSERT INTO accounts (user_id,account_number,balance_cents) VALUES (1,'SB-1',1000)"
         )
         db.commit()
     return app

@@ -21,7 +21,7 @@ def app(tmp_path):
                 "INSERT INTO users (username,email,full_name,password_hash,role) VALUES (?,?,?,?,'customer')",
                 (name.lower(), f"{name.lower()}@t", name, ph.hash("pw")),
             )
-        for uid, acct in ((1, "V24-1"), (2, "V24-2"), (3, "V24-3")):
+        for uid, acct in ((1, "SB-1"), (2, "SB-2"), (3, "SB-3")):
             db.execute(
                 "INSERT INTO accounts (user_id,account_number,balance_cents) VALUES (?,?,1000)",
                 (uid, acct),

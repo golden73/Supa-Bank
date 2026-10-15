@@ -55,7 +55,7 @@ def register():
             (username, email, full_name, pw_hash),
         )
         user_id = cur.lastrowid
-        account_number = "V24" + "".join(secrets.choice("0123456789") for _ in range(9))
+        account_number = "SB-" + "".join(secrets.choice("0123456789") for _ in range(9))
         db.execute(
             "INSERT INTO accounts (user_id, account_number, balance_cents) VALUES (?, ?, ?)",
             (user_id, account_number, STARTING_BALANCE_CENTS),

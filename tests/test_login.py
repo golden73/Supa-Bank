@@ -23,7 +23,7 @@ def app(tmp_path):
             (ph.hash("Alice#Demo2026"),),
         )
         db.execute("INSERT INTO accounts (user_id,account_number,balance_cents) "
-                   "VALUES (1,'V24-1',100000)")
+                   "VALUES (1,'SB-1',100000)")
         db.commit()
     return app
 

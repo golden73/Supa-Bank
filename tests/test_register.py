@@ -11,6 +11,10 @@ def test_register_ok_and_hashed(client, app):
         ).fetchone()
     assert row["password_hash"].startswith("$argon2")
     assert "Sup3rSecret99" not in row["password_hash"]
+    with app.app_context():
+        from app.db import get_db
+        acct = get_db().execute("SELECT account_number FROM accounts WHERE user_id = 1").fetchone()
+    assert acct["account_number"].startswith("SB-")  # rebranded account prefix
 
 
 def test_register_rejects_bad_input(client):

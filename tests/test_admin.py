@@ -21,8 +21,8 @@ def app(tmp_path):
         db.execute(
             "INSERT INTO users (username,email,full_name,password_hash,role) VALUES "
             "('bob','b@t','Bob',?,'customer')", (ph.hash("Bob#Demo2026"),))
-        db.execute("INSERT INTO accounts (user_id,account_number,balance_cents) VALUES (1,'V24-1',0)")
-        db.execute("INSERT INTO accounts (user_id,account_number,balance_cents) VALUES (2,'V24-2',50000)")
+        db.execute("INSERT INTO accounts (user_id,account_number,balance_cents) VALUES (1,'SB-1',0)")
+        db.execute("INSERT INTO accounts (user_id,account_number,balance_cents) VALUES (2,'SB-2',50000)")
         db.commit()
     return app
 
@@ -103,8 +103,8 @@ def csrf_app(tmp_path):
         db = get_db()
         db.execute("INSERT INTO users (username,email,full_name,password_hash,role) VALUES ('admin','a@t','Admin',?,'admin')", (ph.hash("pw"),))
         db.execute("INSERT INTO users (username,email,full_name,password_hash,role) VALUES ('bob','b@t','Bob',?,'customer')", (ph.hash("pw"),))
-        db.execute("INSERT INTO accounts (user_id,account_number,balance_cents) VALUES (1,'V24-1',0)")
-        db.execute("INSERT INTO accounts (user_id,account_number,balance_cents) VALUES (2,'V24-2',0)")
+        db.execute("INSERT INTO accounts (user_id,account_number,balance_cents) VALUES (1,'SB-1',0)")
+        db.execute("INSERT INTO accounts (user_id,account_number,balance_cents) VALUES (2,'SB-2',0)")
         db.commit()
     return app
 

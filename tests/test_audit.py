@@ -22,9 +22,9 @@ def app(tmp_path):
         db.execute("INSERT INTO users (username,email,full_name,password_hash,role) VALUES ('admin','a@t','Admin',?,'admin')", (ph.hash("pw"),))
         db.execute("INSERT INTO users (username,email,full_name,password_hash,role) VALUES ('cust','c@t','Cust',?,'customer')", (ph.hash("pw"),))
         db.execute("INSERT INTO users (username,email,full_name,password_hash,role) VALUES ('victim','v@t','Vic',?,'customer')", (ph.hash("pw"),))
-        db.execute("INSERT INTO accounts (user_id,account_number,balance_cents) VALUES (1,'V24-1',0)")
-        db.execute("INSERT INTO accounts (user_id,account_number,balance_cents) VALUES (2,'V24-2',100000)")
-        db.execute("INSERT INTO accounts (user_id,account_number,balance_cents) VALUES (3,'V24-3',0)")
+        db.execute("INSERT INTO accounts (user_id,account_number,balance_cents) VALUES (1,'SB-1',0)")
+        db.execute("INSERT INTO accounts (user_id,account_number,balance_cents) VALUES (2,'SB-2',100000)")
+        db.execute("INSERT INTO accounts (user_id,account_number,balance_cents) VALUES (3,'SB-3',0)")
         # A secret hash that must never reach the page.
         app.config["_SECRET_HASH"] = ph.hash("SecretPass#123")
         db.execute("INSERT INTO users (username,email,full_name,password_hash,role) VALUES ('secret','s@t','Sec',?,'customer')", (app.config["_SECRET_HASH"],))
